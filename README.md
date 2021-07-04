@@ -14,7 +14,7 @@ just copy and paste `switcher.exe` file somewhere where you can access it easily
 ```
 switcher add --version=74 --path=C:\tools\php74
 ```
-2. Activate (switch to) the version any time like this
+2. Activate (switch to) the version any time like this (Restart or Open a new terminal to see effects for CLI)
 ```
 switcher set --version=74
 ```
