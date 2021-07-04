@@ -246,7 +246,7 @@ class Manager{
             this->registrar = new Registrar(this->fileManager,this->output);
         }
         void addPHP(){
-            string version = this->getArgumentValue(this->getArgument(PHP::VERSION_KEY));
+            string version = this->getArgumentValue(this->getArgument(PHP::VERSION_KEY),10);
             string path = this->getArgumentValue(this->getArgument(PHP::PATH_KEY));
 
             Validation::alreadyExistCheck(this,version);
@@ -258,7 +258,7 @@ class Manager{
             cout << this->output->changeColor("Success: ","green")+"Added PHP "+this->php->version + " in Database";
         }
         void setPHP(){
-            string version = this->getArgumentValue(this->getArgument(PHP::VERSION_KEY));
+            string version = this->getArgumentValue(this->getArgument(PHP::VERSION_KEY),10);
             
             PHP matched_version = Validation::validatePHPVersion(this,version);
 
@@ -320,15 +320,15 @@ class Manager{
             }
         }
 
-        string getArgumentValue(string arg){
+        string getArgumentValue(string arg,int maxLength = 50){
             string this_arg = arg;
             string res;
             try{
                 res = arg.replace(0,arg.find("=")+1,"");
                 if(res == ""){
                     throw("Invalid Argument Value For '"+this_arg+"'");
-                }else if(res.length() > 10){
-                    throw((string)"Version value is too long (Max length: 10)");
+                }else if(res.length() > maxLength){
+                    throw((string)"Argument value is too long (Max length for that argument is: "+to_string(maxLength)+")");
                 }
             }catch(string e){
                 cout << this->output->changeColor("ERROR: ","red") + e;
