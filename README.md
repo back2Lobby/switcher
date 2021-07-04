@@ -19,12 +19,12 @@ switcher add --version=74 --path=C:\tools\php74
 switcher set --version=74
 ```
 ### Resetting Versions
-You can deactivate all activate versions this way
+You can deactivate all activated versions this way
 ```
 switcher unset
 ```
 ### List Available Versions
-You can list all version available in database
+You can list all versions available in database
 ```
 switcher list
 ```
