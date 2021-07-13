@@ -1,0 +1,2 @@
+test<===>C:\tools\test
+videos<===>D:\vidoes\video

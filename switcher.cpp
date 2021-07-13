@@ -125,6 +125,17 @@ class FileManager{
                 }
             file.close();
         }
+        void removeVersion(string version){
+            // update the vector
+            for(int i=0;i<this->availableVersions.size();i++){
+                if(this->availableVersions[i].version == version){
+                    this->availableVersions.erase(this->availableVersions.begin()+i);
+                    break;
+                }
+            }
+            // update the db file
+            this->updateDatabase();
+        }
     private:
         // load all the saved php versions from database to the array/vector "availableVersions"
         void setupAvailableVersions(){
@@ -144,6 +155,13 @@ class FileManager{
                 }
                 dbfile.close();
             }
+        }
+        void updateDatabase(){
+            fstream file("database.txt",fstream::out | fstream::trunc);
+                for(int i=0;i<this->availableVersions.size();i++){
+                    file << this->availableVersions[i].version+"<===>"+this->availableVersions[i].path+"\n";
+                }
+            file.close();
         }
 };
 
@@ -205,6 +223,17 @@ class Registrar{
             }
         }
 
+        PHP* current_activated_version(){
+            for(int i=0;i<this->all_path_envs.size();i++){
+                for(int j=0;j< this->fileManager->availableVersions.size();j++){
+                    if(this->all_path_envs[i] == this->fileManager->availableVersions[j].path){
+                        return new PHP(this->fileManager->availableVersions[j].version,this->fileManager->availableVersions[j].path);
+                    }
+                }
+            }
+            return new PHP("","");
+        }
+
         void save_new_path(){
             string new_path = join(this->all_path_envs,";");
             this->registry_write(TEXT("Environment"),TEXT("Path"),REG_EXPAND_SZ,new_path.c_str());
@@ -229,7 +258,8 @@ class Manager;
 class Validation{
     public:
         static PHP validatePHPVersion(Manager *manager,string version);
-        static bool alreadyExistCheck(Manager *manager,string version);
+        static bool alreadyExistCheck(Manager *manager,string version,bool shouldExistOrNot);
+        static void isNotActivatedCheck(Manager *manager,string version);
 };
 
 class Manager{
@@ -249,7 +279,7 @@ class Manager{
             string version = this->getArgumentValue(this->getArgument(PHP::VERSION_KEY),10);
             string path = this->getArgumentValue(this->getArgument(PHP::PATH_KEY));
 
-            Validation::alreadyExistCheck(this,version);
+            Validation::alreadyExistCheck(this,version,false);
 
             this->php = new PHP(version,path);
 
@@ -276,14 +306,27 @@ class Manager{
         void unsetPHP(){
             this->registrar->deactivate_all_versions(true);
         }
+        void removePHP(){
+            string version = this->getArgumentValue(this->getArgument(PHP::VERSION_KEY),10);
+            
+            Validation::alreadyExistCheck(this,version,true);
+
+            Validation::isNotActivatedCheck(this,version);
+
+            this->fileManager->removeVersion(version);
+
+            cout << this->output->changeColor("SUCCESS: ","green") + "Removed version " + version + " from Database";
+        }
+
         void help(){
             cout << this->output->changeColor("Syntax: ","blue") << endl << "   " << "switcher action [--arguments]" << endl;
 
             cout << this->output->changeColor("Actions: ","blue") << endl;
             cout << "   " << setw(25) << left << this->output->changeColor("add ","green") << "Add a new version data to Local Database using given arguments." << endl;
-            // cout << "   " << setw(25) << left << this->output->changeColor("remove ","green") << "Remove a version data to Local Database using given arguments." << endl;
+            cout << "   " << setw(25) << left << this->output->changeColor("remove ","green") << "Remove a version data to Local Database using given arguments." << endl;
             cout << "   " << setw(25) << left << this->output->changeColor("set ","green") << "Activate (switch to) a version from database." << endl;
             cout << "   " << setw(25) << left << this->output->changeColor("unset ","green") << "Deactivate any activated version" << endl;
+            cout << "   " << setw(25) << left << this->output->changeColor("list ","green") << "List all available versions" << endl;
 
             cout << this->output->changeColor("Arguments: ","blue") << endl;
             cout << "   " << setw(25) << left << this->output->changeColor("--version ","green") << "Specify a version" << endl;
@@ -351,14 +394,33 @@ PHP Validation::validatePHPVersion(Manager *manager,string version = ""){
         exit(1);
     }
 }
-bool Validation::alreadyExistCheck(Manager *manager,string version){
+bool Validation::alreadyExistCheck(Manager *manager,string version,bool shouldExistOrNot = false){
     try{
         for(int i=0;i<manager->fileManager->availableVersions.size();i++){
             if(manager->fileManager->availableVersions[i].version == version){
-                throw("The version "+version+" already exists in Database");
+                if(shouldExistOrNot){
+                    return true;
+                }else{
+                    throw("The version "+version+" already exists in Database");
+                }
             }
         }
-        return true;
+        if(shouldExistOrNot){
+            throw("The version "+version+" is already removed from database");
+        }else{
+            return true;
+        }
+    }catch(string e){
+        cout << manager->output->changeColor("ERROR: ","red") + e;
+        exit(1);
+    }
+}
+void Validation::isNotActivatedCheck(Manager *manager,string version){
+    PHP *current_activated = manager->registrar->current_activated_version();
+    try{
+        if(version == current_activated->version){
+            throw((string)"Currently activated versions can't be removed.");
+        }
     }catch(string e){
         cout << manager->output->changeColor("ERROR: ","red") + e;
         exit(1);
@@ -374,6 +436,8 @@ int main(int argc,char* argv[]){
         string action = argv[1];
         if(action == "add"){
             manager->addPHP();
+        }else if(action == "remove"){
+            manager->removePHP();
         }else if(action == "set"){
             manager->setPHP();
         }else if(action == "list"){
