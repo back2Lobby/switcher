@@ -297,7 +297,8 @@ class Manager{
         void listPHPs(){
             if(this->fileManager->availableVersions.size() > 0){
                 for(int i=0;i<this->fileManager->availableVersions.size();i++){
-                    cout << setw(30) << left << (this->output->changeColor("("+to_string(i+1)+") ","blue") + this->fileManager->availableVersions[i].version) << this->fileManager->availableVersions[i].path << endl;
+                    int ind = i+1;
+                    cout << setw(30) << left << (this->output->changeColor("("+to_string(ind)+") ","blue") + this->fileManager->availableVersions[i].version) << this->fileManager->availableVersions[i].path << endl;
                 }
             }else{
                 cout << this->output->changeColor("INFO: ","blue") + "No Version Available in local database";
