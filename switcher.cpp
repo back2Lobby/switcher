@@ -145,14 +145,17 @@ class FileManager{
                 string tp;
                 while(getline(dbfile,tp)){
                     tp = toRawString(tp);
-                    string delimiter = "<===>";
-                    string version = tp.substr(0,tp.find("<===>"));
-                    string path = tp.substr(tp.find("<===>")+delimiter.length(),tp.length());
-                    if(version.length() > 0 && path.length() > 0){
-                        PHP p(version,path);
-                        this->availableVersions.push_back(p);
+                    if(tp.length() > 0){
+                        string delimiter = "<===>";
+                        string version = tp.substr(0,tp.find("<===>"));
+                        string path = tp.substr(tp.find("<===>")+delimiter.length(),tp.length());
+                        if(version.length() > 0 && path.length() > 0){
+                            PHP p(version,path);
+                            this->availableVersions.push_back(p);
+                        }
                     }
                 }
+
                 dbfile.close();
             }
         }
@@ -297,8 +300,7 @@ class Manager{
         void listPHPs(){
             if(this->fileManager->availableVersions.size() > 0){
                 for(int i=0;i<this->fileManager->availableVersions.size();i++){
-                    int ind = i+1;
-                    cout << setw(30) << left << (this->output->changeColor("("+to_string(ind)+") ","blue") + this->fileManager->availableVersions[i].version) << this->fileManager->availableVersions[i].path << endl;
+                    cout << setw(30) << left << (this->output->changeColor("("+to_string(i+1)+") ","blue") + this->fileManager->availableVersions[i].version) << this->fileManager->availableVersions[i].path << endl;
                 }
             }else{
                 cout << this->output->changeColor("INFO: ","blue") + "No Version Available in local database";
