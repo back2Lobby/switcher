@@ -3,6 +3,9 @@ Switch between multiple versions of PHP on windows. It basically just modifies t
 
 > Make sure there is no path of any PHP version already added to `SYSTEM PATH` & `USER PATH` both Environmental Variables. Because this tool won't ever effect `SYSTEM PATH`. But it is recommended to keep a backup of `USER PATH`
 
+![Switcher-min](https://user-images.githubusercontent.com/29447722/125731780-adeda02a-7643-4e61-b62a-53c6fa6836c0.gif)
+
+
 ## Usage:
 Just copy and paste `switcher.exe` file somewhere where you can access it easily.
 
