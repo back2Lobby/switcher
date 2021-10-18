@@ -336,6 +336,11 @@ class Manager{
             cout << "   " << setw(25) << left << this->output->changeColor("--path ","green") << "Specify a path for version" << endl;
         }
 
+        void refreshEnv(){
+            LPCTSTR keyPath = TEXT("Environment");
+            SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, (LPARAM)keyPath, SMTO_BLOCK, 100, NULL);
+        }
+
         FileManager *fileManager;
         PHP *php;
         Registrar *registrar;
@@ -443,10 +448,12 @@ int main(int argc,char* argv[]){
             manager->removePHP();
         }else if(action == "set"){
             manager->setPHP();
+            manager->refreshEnv();
         }else if(action == "list"){
             manager->listPHPs();
         }else if(action == "unset"){
             manager->unsetPHP();
+            manager->refreshEnv();
         }else if(action == "--help"){
             manager->help();
         }
