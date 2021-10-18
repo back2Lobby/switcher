@@ -35,3 +35,10 @@ switcher list
 ```
 switcher --help
 ```
+
+### Build Instructions
+If you want to build it then make sure to use -static-libgcc and -static-libstdc++ flags.
+For example, 
+```
+g++ switcher.cpp -o switcher -static-libgcc -static-libstdc++
+```
