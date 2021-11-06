@@ -64,32 +64,50 @@ const string PHP::PATH_KEY = "--path";
 
 struct Color{
     string name;
-    string code;
+    int code;
 };
 
 class Output{
     public:
+        int defaultColor;
+        HANDLE hConsole;
+
         Output(){
+            this->hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+            CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+            GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbiInfo);
+            this->defaultColor = csbiInfo.wAttributes;
+
             this->setColors();
         }
         string changeColor(string str,string color){
             Color c = this->getColor(color);
+
             if(c.name != ""){
-                return c.code+str+this->getColor("reset").code;
+                SetConsoleTextAttribute(this->hConsole, c.code);
+
+                // return c.code+str+this->getColor("reset").code;
+                cout << str;
+
+                // reset color to default terminal color
+                SetConsoleTextAttribute(this->hConsole, this->defaultColor);
             }
+
+            return "";
         }
     private:
         Color colors[4];
         void setColors(){
             Color c1,c2,c3,c4;
             c1.name = "reset";
-            c1.code = "\e[0m";
+            c1.code = this->defaultColor;
             c2.name = "red";
-            c2.code = "\e[0;31m";
+            c2.code = 4;
             c3.name = "green";
-            c3.code = "\e[0;32m";
+            c3.code = 2;
             c4.name = "blue";
-            c4.code = "\e[0;34m";
+            c4.code = 1;
             colors[0] = c1;
             colors[1] = c2;
             colors[2] = c3;
@@ -102,8 +120,8 @@ class Output{
                 }
             }
             Color empColor;
-            empColor.name = "";
-            empColor.code = "";
+            empColor.name = "default";
+            empColor.code = this->defaultColor;
             return empColor;
         }
 };
